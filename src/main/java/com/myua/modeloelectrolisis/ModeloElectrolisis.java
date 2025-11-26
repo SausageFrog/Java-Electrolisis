@@ -43,13 +43,14 @@ public class ModeloElectrolisis {
 
     }
     //info para generar el grafico
-    public static double tiempoEjeX = 60.0;
+    public static double tiempoEjeX = 60;
     public ArrayList<Double> SerieH2(ParametrosSimulados parametros, double tiempoTotal) {
         ArrayList<Double> serieH2 = new ArrayList<>();
 
 
         double tiempoLimite = tiempoTotal;
         double tiempomaximo = parametros.getTiempoMaximoSegundos();
+        if(tiempoLimite <= 180) tiempoEjeX = 30;
 
         if (tiempomaximo > 0 && tiempomaximo < tiempoTotal) {
             tiempoLimite = tiempomaximo;

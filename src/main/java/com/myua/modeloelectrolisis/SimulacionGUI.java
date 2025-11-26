@@ -88,6 +88,7 @@ public class SimulacionGUI extends JFrame {
         add(panelResultados, BorderLayout.CENTER);
         add(panelBoton, BorderLayout.SOUTH);
         setLocationRelativeTo(null);
+        
     }
 
     private JPanel PanelControl(String titulo, JSlider slider, JLabel labelValor, String simbolo, double divisor) {
@@ -127,7 +128,7 @@ public class SimulacionGUI extends JFrame {
         ModeloElectrolisis modelo = new ModeloElectrolisis();
         ResultadosSimulados resultados = modelo.simular(parametros, tiempoSimulado);
 
-        lblVolumenH2.setText(String.format("%.4f L", resultados.getVolumenH2()));
+        lblVolumenH2.setText(String.format("%.4f Lt", resultados.getVolumenH2()));
         lblEnergiaConsumida.setText(String.format("%.2f J", resultados.getConsumoEnergia()));
         lblTempFinal.setText(String.format("%.2f °C", resultados.getTemperaturaFinal()));
 
