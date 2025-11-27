@@ -1,6 +1,6 @@
 package com.myua.modeloelectrolisis;
 
-import javax.swing.SwingUtilities;
+import javafx.application.Application;
 import java.util.ArrayList;
 
 public class ModeloElectrolisis {
@@ -8,7 +8,7 @@ public class ModeloElectrolisis {
         if (tiempoSegundos <= 0) {
             return new ResultadosSimulados(0.0, 0.0,25);
         }
-
+        //variables obtenidas de parametro
         double volAplicado = parametros.getVoltaje();
         double intensidad = parametros.getCorriente();
         double VolMinimo = parametros.getVoltajeMinimo();
@@ -19,15 +19,17 @@ public class ModeloElectrolisis {
         if (volAplicado < VolMinimo) {
             corrienteEfectiva = 0.0;
         }
+        //tiempo maximo que puede operar el [rograma
         double tiempoEfectivo = tiempoSegundos;
         double tiempoMaximo = parametros.getTiempoMaximoSegundos();
         if (tiempoMaximo > 0 && tiempoSegundos > tiempoMaximo) {
             tiempoEfectivo = tiempoMaximo;
         }
-
+        //molesObtenidos a traves de los parametros
         double molesObtenidos = (corrienteEfectiva * tiempoEfectivo) / (ResultadosSimulados.CONSTANTE_FARADAY * ResultadosSimulados.ELECTRONES_H2);
         double molesH2 = molesObtenidos * eficiencia;
         double volH2 = molesH2 * 22.4;
+        //corriente
         double energiaTotal = volAplicado * corrienteEfectiva * tiempoEfectivo;
 
         //el calor se genera a traves del voltaje no utilizado o desperdiciado en el proceso
@@ -43,10 +45,11 @@ public class ModeloElectrolisis {
 
     }
     //info para generar el grafico
-    public static double tiempoEjeX = 60;
+    public static double tiempoEjeX = 10;
     public ArrayList<Double> SerieH2(ParametrosSimulados parametros, double tiempoTotal) {
         ArrayList<Double> serieH2 = new ArrayList<>();
-
+        
+        serieH2.add(0.0);
 
         double tiempoLimite = tiempoTotal;
         double tiempomaximo = parametros.getTiempoMaximoSegundos();
@@ -70,11 +73,6 @@ public class ModeloElectrolisis {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new SimulacionGUI().setVisible(true);
-            }
-        });
+        Application.launch(SimulacionGUI.class, args);
     }
 }

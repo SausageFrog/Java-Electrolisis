@@ -1,8 +1,6 @@
 com/myua/modeloelectrolisis/ParametrosSimulados.class
-com/myua/modeloelectrolisis/SimulacionGUI$1.class
+module-info.class
 com/myua/modeloelectrolisis/ResultadosSimulados.class
 com/myua/modeloelectrolisis/SimulacionGUI.class
-com/myua/modeloelectrolisis/ModeloElectrolisis.class
-com/myua/modeloelectrolisis/ModeloElectrolisis$1.class
-com/myua/modeloelectrolisis/Grafico$1.class
 com/myua/modeloelectrolisis/Grafico.class
+com/myua/modeloelectrolisis/ModeloElectrolisis.class

@@ -1,0 +1,4 @@
+--patch-module
+ModeloElectrolisis=_
+--add-reads
+ModeloElectrolisis=ALL-UNNAMED

@@ -1,5 +1,178 @@
 package com.myua.modeloelectrolisis;
 
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class SimulacionGUI extends Application {
+
+    private Slider sldVoltaje;
+    private Slider sldCorriente;
+    private Slider sldEficiencia;
+    private Slider sldTiempoMax;
+    private Slider sldTempInicial;
+    private Slider sldTiempoSim;
+    
+    private Label lblValVoltaje;
+    private Label lblValCorriente;
+    private Label lblValEficiencia;
+    private Label lblValTiempoMax;
+    private Label lblValTempInicial;
+    private Label lblValTiempoSimulado;
+
+    private Label lblVolumenH2;
+    private Label lblEnergiaConsumida;
+    private Label lblTempFinal;
+
+    private Stage primaryStage;
+    private Grafico graficoComponente;
+
+    @Override
+    public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        primaryStage.setTitle("Simulador Electrólisis");
+        
+        VBox panelIzquierdo = new VBox(15); 
+        panelIzquierdo.setPadding(new Insets(10));
+        panelIzquierdo.setMinWidth(350);
+        
+        VBox panelPotencia = new VBox(10);
+        panelPotencia.getStyleClass().add("tiled-panel");
+        
+        sldVoltaje = new Slider(0, 200, 20); lblValVoltaje = new Label("2.0 V");
+        panelPotencia.getChildren().add(crearControlSlider("Voltaje Aplicado", sldVoltaje, lblValVoltaje, " V", 10.0));
+
+        sldCorriente = new Slider(0, 100, 50); lblValCorriente = new Label("5.0 A");
+        panelPotencia.getChildren().add(crearControlSlider("Corriente", sldCorriente, lblValCorriente, " A", 10.0));
+
+        sldEficiencia = new Slider(0, 100, 85); lblValEficiencia = new Label("85 %");
+        panelPotencia.getChildren().add(crearControlSlider("Eficiencia Farádica", sldEficiencia, lblValEficiencia, " %", 1.0));
+
+        sldTiempoMax = new Slider(0, 3600, 1800); lblValTiempoMax = new Label("1800 s");
+        panelPotencia.getChildren().add(crearControlSlider("Tiempo Máximo", sldTiempoMax, lblValTiempoMax, " s", 1.0));
+
+        sldTempInicial = new Slider(0, 100, 25); lblValTempInicial = new Label("25 °C");
+        panelPotencia.getChildren().add(crearControlSlider("Temperatura Inicial", sldTempInicial, lblValTempInicial, " °C", 1.0));
+
+        sldTiempoSim = new Slider(0, 3600, 600); lblValTiempoSimulado = new Label("600 s");
+        panelPotencia.getChildren().add(crearControlSlider("Tiempo Simulación", sldTiempoSim, lblValTiempoSimulado, " s", 1.0));
+        
+        TitledPane potenciaPane = new TitledPane("Fuentes de Poder y Tiempo", panelPotencia);
+        potenciaPane.setCollapsible(false);
+        panelIzquierdo.getChildren().add(potenciaPane);
+
+        
+        
+        Button btnSimular = new Button("Iniciar Simulación");
+        btnSimular.setMaxWidth(Double.MAX_VALUE);
+        btnSimular.setOnAction(e -> realizarSimulacion());
+        btnSimular.getStyleClass().add("boton-simular");
+        panelIzquierdo.getChildren().add(btnSimular);
+        
+        GridPane panelResultados = new GridPane();
+        panelResultados.setPadding(new Insets(10));
+        panelResultados.setHgap(10);
+        panelResultados.setVgap(10);
+        panelResultados.getStyleClass().add("tiled-panel");
+        
+        lblVolumenH2        = new Label("---");
+        lblEnergiaConsumida = new Label("---");
+        lblTempFinal        = new Label("---");
+
+        lblVolumenH2.getStyleClass().add("resultado-valor");
+        lblEnergiaConsumida.getStyleClass().add("resultado-valor");
+        lblTempFinal.getStyleClass().add("resultado-valor");
+
+        panelResultados.add(new Label("Hidrógeno Obtenido (L):"), 0, 0); panelResultados.add(lblVolumenH2, 1, 0);
+        panelResultados.add(new Label("Energía Consumida (J):"), 0, 1); panelResultados.add(lblEnergiaConsumida, 1, 1);
+        panelResultados.add(new Label("Temperatura Final (°C):"), 0, 2); panelResultados.add(lblTempFinal, 1, 2);
+        
+        TitledPane resultadosPane = new TitledPane("Resultados Obtenidos:", panelResultados);
+        resultadosPane.setCollapsible(false);
+        panelIzquierdo.getChildren().add(resultadosPane);
+        
+        //GRÁFICO
+        graficoComponente = new Grafico();
+        
+        //MENU
+        HBox root = new HBox(10);
+        root.setPadding(new Insets(10));
+        
+        HBox.setHgrow(graficoComponente, Priority.ALWAYS);
+        
+        root.getChildren().addAll(panelIzquierdo, graficoComponente);
+        
+        Scene scene = new Scene(root, 1100, 650); // Ventana
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private HBox crearControlSlider(String titulo, Slider slider, Label labelValor, String simbolo, double divisor) {
+        HBox panel = new HBox(10);
+        panel.setAlignment(Pos.CENTER_LEFT);
+        
+        Label lblTitulo = new Label(titulo);
+        lblTitulo.setMinWidth(200); 
+        
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(slider.getMax() / 5);
+        slider.setPrefWidth(200);
+        HBox.setHgrow(slider, Priority.ALWAYS); 
+        
+        slider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            double valorReal = newVal.doubleValue() / divisor;
+            String formato = (divisor == 1.0) ? "%.0f" : "%.1f";
+            
+            labelValor.setText(String.format(Locale.US, formato, valorReal) + simbolo);
+        });
+        
+        panel.getChildren().addAll(lblTitulo, slider, labelValor);
+        return panel;
+    }
+
+    private void realizarSimulacion() {
+        double voltaje = sldVoltaje.getValue() / 10.0;
+        double corriente = sldCorriente.getValue() / 10.0;
+        double eficiencia = sldEficiencia.getValue();
+        double tiempoMax = sldTiempoMax.getValue();
+        double tempInicial = sldTempInicial.getValue();
+        double tiempoSimulado = sldTiempoSim.getValue();
+        
+        ParametrosSimulados parametros = new ParametrosSimulados(
+            voltaje, corriente, eficiencia, tiempoMax, tempInicial
+        );
+        
+        ModeloElectrolisis modelo = new ModeloElectrolisis();
+        ResultadosSimulados resultados = modelo.simular(parametros, tiempoSimulado);
+
+        lblVolumenH2.setText(String.format(Locale.US, "%.4f Lt", resultados.getVolumenH2()));
+        lblEnergiaConsumida.setText(String.format(Locale.US, "%.2f J", resultados.getConsumoEnergia()));
+        lblTempFinal.setText(String.format(Locale.US, "%.2f °C", resultados.getTemperaturaFinal()));
+
+        ArrayList<Double> serieDeTiempo = modelo.SerieH2(parametros, tiempoSimulado);
+        
+        if (!serieDeTiempo.isEmpty()) { 
+            graficoComponente.actualizarDatos(serieDeTiempo);
+        } else {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(primaryStage);
+            alert.setTitle("Advertencia");
+            alert.setHeaderText(null);
+            alert.setContentText("No se puede generar un gráfico con esa cantidad de tiempo o con los parámetros actuales.");
+            alert.showAndWait();
+        }
+    }
+}
+
+/*
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -144,3 +317,4 @@ public class SimulacionGUI extends JFrame {
         }
     }
 }
+*/

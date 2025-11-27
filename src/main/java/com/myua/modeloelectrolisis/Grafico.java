@@ -1,5 +1,56 @@
 package com.myua.modeloelectrolisis;
 
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority;
+import java.util.List;
+
+public class Grafico extends VBox { 
+    
+    private LineChart<Number, Number> lineChart;
+
+    public Grafico() {
+        this.lineChart = crearGraficoVacio();
+        VBox.setVgrow(this.lineChart, Priority.ALWAYS);
+        this.getChildren().add(this.lineChart);
+        this.getStyleClass().add("grafico-contenedor");
+    }
+    
+    private LineChart<Number, Number> crearGraficoVacio() {
+        final NumberAxis xAxis = new NumberAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("Tiempo (s)");
+        yAxis.setLabel("Volumen H₂ (Lt)");
+        
+        final LineChart<Number, Number> chart = new LineChart<>(xAxis, yAxis);
+        chart.setTitle("Producción de Hidrógeno Acumulado");
+        chart.setLegendVisible(false);
+        chart.setCreateSymbols(true);
+        chart.getStyleClass().add("chart-background"); 
+        
+        return chart;
+    }
+
+    public void actualizarDatos(List<Double> serieDeTiempo) {
+        this.lineChart.getData().clear();
+        
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName("Volumen de H2");
+        
+        double tiempoEjeX = ModeloElectrolisis.tiempoEjeX; 
+        double tiempoActual = 0;
+        
+        for (double volumen : serieDeTiempo) {
+            tiempoActual += tiempoEjeX;
+            series.getData().add(new XYChart.Data<>(tiempoActual, volumen));
+        }
+        
+        this.lineChart.getData().add(series);
+    }
+}
+/*
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -93,4 +144,4 @@ public class Grafico extends JDialog {
         setSize(750, 650);
         setLocationRelativeTo(ventanaPrincipal); //para que se pueda iniciar en modeloelectrolisis
     }
-}
+}*/
